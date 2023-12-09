@@ -1,101 +1,63 @@
-const express = require("express"),
-    mongoose = require("mongoose"),
-    passport = require("passport"),
-    bodyParser = require("body-parser"),
-    LocalStrategy = require("passport-local"),
-    passportLocalMongoose = 
-        require("passport-local-mongoose")
-const User = require("./model/User");
-let app = express();
- 
-mongoose.connect("mongodb://localhost/27017");
- 
-app.set("view engine", "ejs");
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(require("express-session")({
-    secret: "Rusty is a dog",
-    resave: false,
-    saveUninitialized: false
-}));
- 
-app.use(passport.initialize());
-app.use(passport.session());
- 
-passport.use(new LocalStrategy(User.authenticate()));
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
- 
-//=====================
-// ROUTES
-//=====================
- 
-// Showing home page
-app.get("/", function (req, res) {
-    res.render("home");
+const express = require('express')
+const app = express()
+const cors = require('cors')
+const server = require('http').Server(app)
+
+const mongoose = require('mongoose');
+const mongoString = "mongodb+srv://alanrs:mongoDb%402022@cluster0.mwfhaia.mongodb.net/"
+
+mongoose.connect(mongoString);
+const database = mongoose.connection;
+let loggedUser = "No user!";
+database.on('error', (error) => {
+    console.log(error)
+})
+
+database.once('connected', () => {
+    console.log('Database Connected');
+})
+app.use(cors())
+app.use(express.json());
+
+
+app.get("/",(req,res)=>{
+    res.send("Hello World");
+})
+
+app.get("/isLoggedIn",(req,res)=>{
+  if(loggedUser != "No user!" || loggedUser != "Invalid email or password!"){
+    res.send(loggedUser)
+  }else{
+    res.send("Not logged in");
+  }
+})
+app.get("/users",async (req,res)=>{
+    let data = await database.collection("users").find().toArray();
+    res.send(data)
+})
+app.post("/new",async (req,res)=>{
+    let data = req.body;
+    let result = await database.collection("users").insertOne(data);
+    res.send(result).status(204);
+
 });
- 
-// Showing secret page
-app.get("/secret", isLoggedIn, function (req, res) {
-    res.render("secret");
-});
- 
-// Showing register form
- app.get("/users",async function(req,res){
-    res.send(await User.find())
- })
-// Handling user signup
-app.post("/register", async (req, res) => {
-    const user = await User.create({
-      fullName:req.body.fullName,
-      username: req.body.username,
-      password: req.body.password
-    });
-   
-    return res.status(200).json(user);
-  });
- 
-//Showing login form
-app.get("/login", function (req, res) {
-    res.render("login");
-});
- 
-//Handling user login
-app.post("/login", async function(req, res){
-    try {
-        // check if the user exists
-        const user = await User.findOne({ username: req.body.username });
-        if (user) {
-          //check if password matches
-          const result = req.body.password === user.password;
-          if (result) {
-            res.render("secret");
-          } else {
-            res.status(400).json({ error: "password doesn't match" });
-          }
-        } else {
-          res.status(400).json({ error: "User doesn't exist" });
-        }
-      } catch (error) {
-        res.status(400).json({ error });
+app.post("/login",async (req,res)=>{
+
+  (await database.collection("users").find().toArray()).forEach(data=>{
+    if(data.username == req.body.username){
+      if(data.password == req.body.password){
+        loggedUser = data;
+      }else{
+        loggedUser = "Invalid email or password!"
       }
-});
- 
-//Handling user logout 
-app.get("/logout", function (req, res) {
-    req.logout(function(err) {
-        if (err) { return next(err); }
-        res.redirect('/');
-      });
-});
- 
- 
- 
-function isLoggedIn(req, res, next) {
-    if (req.isAuthenticated()) return next();
-    res.redirect("/login");
-}
- 
-let port = process.env.PORT || 3000;
-app.listen(port, function () {
-    console.log("Server Has Started!");
-});
+    }else{
+      loggedUser = "Invalid email or password!"
+    }
+  })
+
+  res.send(loggedUser);
+})
+
+server.listen(3000,'localhost',() =>{
+  console.log("Server is Running");
+})
