@@ -1,0 +1,29 @@
+<div class="form-div">
+    <h1>Create Account</h1>
+
+    <form [formGroup]="newForm" (ngSubmit)="submit()">
+        <label for="fullName">Full Name</label>
+        <input type="text" class="form-control form-control-lg" formControlName="fullName" [ngClass]="{ 'is-invalid': submitted && f.fullName.errors }" id="" placeholder="Full Name">
+        <div *ngIf="submitted && f.fullName.errors?.required" class="invalid-feedback"> 
+          *Required
+        </div>
+        <label for="username">Email Id</label>
+        <input type="email" class="form-control form-control-lg" formControlName="username" [ngClass]="{ 'is-invalid': submitted && f.fullName.errors }" id="" placeholder="Email Id">
+        <div *ngIf="submitted && f.fullName.errors?.required" class="invalid-feedback"> 
+          *Required
+        </div>
+        <label for="username">Password</label>
+        <input type="password" class="form-control form-control-lg" formControlName="password1" [ngClass]="{ 'is-invalid': submitted && f.password1.errors }" id="" placeholder="Password">
+        <div *ngIf="submitted && f.password1.errors?.required" class="invalid-feedback"> 
+          *Required
+        </div>
+        <label for="username">Confirm Password</label>
+        <input type="password" class="form-control form-control-lg" formControlName="password2" [ngClass]="{ 'is-invalid': submitted && f.password2.errors }" id="" placeholder="Confirm Password">
+        <div *ngIf="submitted && f.password2.errors?.required" class="invalid-feedback"> 
+          *Required
+        </div>
+
+        <br>
+    <button type="submit" name="" id="" class="btn" >Register</button>
+    </form>
+</div>
