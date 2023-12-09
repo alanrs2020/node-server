@@ -4,7 +4,7 @@ const cors = require('cors')
 const server = require('http').Server(app)
 
 const mongoose = require('mongoose');
-const mongoString = "mongodb+srv://alanrs:mongoDb%402022@cluster0.mwfhaia.mongodb.net/"
+const mongoString = ""
 
 mongoose.connect(mongoString);
 const database = mongoose.connection;
